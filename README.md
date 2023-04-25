@@ -37,7 +37,7 @@ Using the updated "mockfen" board, the code generates FEN notation that can be r
 Finally, the code uncompresses the FEN string to update the digital board, and returns movement instructions for the robot.
 
 ## dependencies
--OpenCV
--Numpy
--https://pypi.org/project/stockfish/ 
--Subprocess
+- OpenCV
+- Numpy
+- https://pypi.org/project/stockfish/ 
+- Subprocess
