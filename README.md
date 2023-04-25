@@ -22,7 +22,6 @@ In the Textfiles folder you have txt files which have the following information:
     
 How does it Work?
   - The image gets color perspective transformed into green and purple
-  - 
   - At the same time the image gets split into 64 cells, this is done by taking board dimensions
       - This assumes that the board is cropped and that the size of squares is consistent
   - It goes through each cells and checks to see if there is a white or black peice and updates the Boardstate accordingly 
