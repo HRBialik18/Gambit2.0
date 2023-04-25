@@ -35,3 +35,9 @@ Next, the code compares the current board state with the previous board state to
 Using the updated "mockfen" board, the code generates FEN notation that can be read by a computer, taking into account castling rights and turn number. The FEN notation is then input into Stockfish to obtain the next best move and the updated FEN string for the current board state.
 
 Finally, the code uncompresses the FEN string to update the digital board, and returns movement instructions for the robot.
+
+## dependencies
+OpenCV
+Numpy
+https://pypi.org/project/stockfish/ 
+Subprocess
