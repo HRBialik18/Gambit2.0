@@ -1,35 +1,37 @@
 # ContinuousChessRobotImaging
-In correlation with the chess robot, Identifies white(green) and black(purple) pieces, and continually keeps track of and updates the digital chess board to output the next best move, and following instructions for the robot
 
-This Code Starts with Taking a pre cropped (and prespective transformed image of a board)
-  - The following assumptions are made about the image:
-    - The image is taken from relativly high up with good lighting
-    - Each peice is (mostly) centerd on the tile
-    - Each peice has a colored sticker on it to help improve recognition (green for white purple for black)
-    - The size of Squares on the board are consistent
- 
-In the Textfiles folder you have txt files which have the following information:
-  - The inital board state (OriginalBoardState)
-  - The inital board state in mock fen (Omof)
-  - The orignial fen-extras which holds move number and castling rights (Ofenextras)
-  - These following files get updated each time the code is run:
-    - Boardstate
-    - Differences
-    - MOF
-    - Fen 
-    - Fen extras
-    - Previous Boardstate
-    
-How does it Work?
-  - The image gets color perspective transformed into green and purple
-  - At the same time the image gets split into 64 cells, this is done by taking board dimensions
-      - This assumes that the board is cropped and that the size of squares is consistent
-  - It goes through each cells and checks to see if there is a white or black peice and updates the Boardstate accordingly 
-      - (boardstate is stores the color of each peice and its position)
-  - It then compares the current boardstate with the previous boardstate to get a differences array.
-      - This gives us the deltas which tells us what peice moved and where it moved to (think of it as standard chess algebretic notation ie. [e4e5]
-  - We then update our current board which is written in "mockfen" which just expands FEN notation into an 8x8 array of peices and 0's for empty cells
-  - given the updated "mockfen" board we can then compress that into FEN that the computer can read and it checks for clastling rights as well as turn number
-  - We put the FEN into stockfish to get the next best move as well as the updated FEN string for the current boardstate
-  - We then uncompress the FEN string to get our own digital board which we update
-  - Finally it returns movement instructions for the robot.
+This project is in correlation with a chess robot and aims to identify white (green) and black (purple) chess pieces in an image, continuously update a digital chess board, and output the next best move for the robot based on instructions.
+
+## Image Assumptions
+
+The code starts with a pre-cropped and perspective-transformed image of a chessboard. The following assumptions are made about the image:
+
+- The image is taken from a relatively high angle with good lighting.
+- Each piece is mostly centered on its corresponding tile.
+- Each piece has a colored sticker (green for white, purple for black) to aid in recognition.
+- The size of squares on the chessboard is consistent.
+
+## Textfiles Folder
+
+The "Textfiles" folder contains the following text files:
+
+- `OriginalBoardState`: The initial board state.
+- `Omof`: The initial board state in mock FEN notation.
+- `Ofenextras`: The original FEN extras, which holds move number and castling rights.
+- The following files get updated each time the code is run:
+  - `Boardstate`: Updated board state.
+  - `Differences`: Differences array, which stores the deltas indicating what piece moved where.
+  - `MOF`: Updated mock FEN notation board.
+  - `Fen`: Updated FEN notation board, including castling rights and turn number.
+  - `Fenextras`: Updated FEN extras, including move number and castling rights.
+  - `PreviousBoardstate`: Previous board state for comparison.
+
+## How it Works
+
+The image is color perspective-transformed into green and purple channels. Simultaneously, the image is split into 64 cells based on the assumed board dimensions, assuming a cropped image with consistent square sizes. The code then iterates through each cell to check for white or black chess pieces, updating the board state accordingly (where board state stores the color and position of each piece).
+
+Next, the code compares the current board state with the previous board state to generate a differences array, which indicates the deltas or moves in standard algebraic notation (e.g., [e4e5]). The current "mockfen" board (an 8x8 array of pieces and 0's for empty cells) is then updated based on the differences array.
+
+Using the updated "mockfen" board, the code generates FEN notation that can be read by a computer, taking into account castling rights and turn number. The FEN notation is then input into Stockfish to obtain the next best move and the updated FEN string for the current board state.
+
+Finally, the code uncompresses the FEN string to update the digital board, and returns movement instructions for the robot.
