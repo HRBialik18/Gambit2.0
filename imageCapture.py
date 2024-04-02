@@ -41,4 +41,4 @@ while True:
 cam.release()
 
 # stops the camera window
-#cam.destoryAllWindows()
+cam.destoryAllWindows()

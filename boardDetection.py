@@ -10,7 +10,7 @@ CLIENT = InferenceHTTPClient(
 result = CLIENT.infer("images.jpeg", model_id="chessboard-1hk4y/3")
 
 # Load the image
-image = cv2.imread('board.jpeg')
+image = cv2.imread('output_image.jpg')
 
 # Convert coordinates to tuples of integers
 coordinates = [(int(coord['x']), int(coord['y'])) for coord in result.get("predictions")[0].get("points")]
