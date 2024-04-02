@@ -7,4 +7,3 @@ CLIENT = InferenceHTTPClient(
 
 result = CLIENT.infer("board.jpeg", model_id="chessboard-1hk4y/3")
 print(result)
-
