@@ -3,9 +3,39 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-def imageCropAndWarp():
+def imageCropAndWarp(inputImPath, outputImPath):
 
-    def find_corners(coordinates):
+
+    CLIENT = InferenceHTTPClient(
+        api_url="https://outline.roboflow.com",
+        api_key="ulxWhbY1nxtlA240URf6"
+    )
+
+    result = CLIENT.infer(inputImPath, model_id="chessboard-1hk4y/3")
+
+    # Load the image
+    original_img = cv2.imread(inputImPath)
+
+    standard_width = 800
+    standard_height = 600
+
+    coordinates = [(int(coord['x']), int(coord['y'])) for coord in result.get("predictions")[0].get("points")]
+
+    # Example usage:
+    #image_path = 'example.jpg'  # Path to your image
+    #plot_coordinates(image_path, coordinates)
+    corners = find_corners(coordinates)
+    #plot_coordinates(image_path, corners)
+    #print(corners)
+
+    transformed_image = perspective_transform_to_square (original_img, corners)
+    #cv2.imshow('Transformed Image', transformed_image)
+    cv2.imwrite(outputImPath, transformed_image)
+    cv2.destroyAllWindows()
+    return
+
+#Helper functions
+def find_corners(coordinates):
         # Convert coordinates to numpy array
         pts = np.array(coordinates, dtype=np.int32)
 
@@ -19,27 +49,25 @@ def imageCropAndWarp():
         # Return the approximated corners
         return approx.reshape(-1, 2)
 
+def perspective_transform_to_square(image, corners):
+        # Define the square shape (destination)
+    square_size = 900  # Adjust as needed
+    dst_corners = np.array([[0, 0], [square_size, 0], [square_size, square_size], [0, square_size]], dtype=np.float32)
+    #print(dst_corners)
+        # Convert corners to float32 if they're not already
+    corners = np.float32(corners)
+        # Compute the perspective transform matrix
+    transform_matrix = cv2.getPerspectiveTransform(corners, dst_corners)
+        
+        # Apply the perspective transform
+    square_image = cv2.warpPerspective(image, transform_matrix, (square_size, square_size))
+        
 
-    CLIENT = InferenceHTTPClient(
-        api_url="https://outline.roboflow.com",
-        api_key="ulxWhbY1nxtlA240URf6"
-    )
+    return square_image #, dst_corners
 
-
-    result = CLIENT.infer("Images/raw_image.jpg", model_id="chessboard-1hk4y/3")
-
-    # Load the image
-    original_img = cv2.imread('Images/raw_image.jpg')
-
-    standard_width = 800
-    standard_height = 600
-
-    coordinates = [(int(coord['x']), int(coord['y'])) for coord in result.get("predictions")[0].get("points")]
-
-
-    def plot_coordinates(image_path, coordinates):
+def plot_coordinates(inputImPath, coordinates):
         # Load the image
-        image = plt.imread('Images/raw_image.jpg')
+        image = plt.imread(inputImPath)
 
         # Plot the image
         #plt.imshow(image)
@@ -53,35 +81,3 @@ def imageCropAndWarp():
 
         # Show plot
         #plt.show()
-
-    # Example usage:
-    #image_path = 'example.jpg'  # Path to your image
-    #plot_coordinates(image_path, coordinates)
-    corners = find_corners(coordinates)
-    #plot_coordinates(image_path, corners)
-    #print(corners)
-
-    def perspective_transform_to_square(image, corners):
-        # Define the square shape (destination)
-        square_size = 900  # Adjust as needed
-        dst_corners = np.array([[0, 0], [square_size, 0], [square_size, square_size], [0, square_size]], dtype=np.float32)
-        print(dst_corners)
-        # Convert corners to float32 if they're not already
-        corners = np.float32(corners)
-        # Compute the perspective transform matrix
-        transform_matrix = cv2.getPerspectiveTransform(corners, dst_corners)
-        
-        # Apply the perspective transform
-        square_image = cv2.warpPerspective(image, transform_matrix, (square_size, square_size))
-        
-
-        return square_image, dst_corners
-
-    transformed_image = perspective_transform_to_square (original_img, corners)
-    #cv2.imshow('Transformed Image', transformed_image)
-    cv2.imwrite('Images/transformed_image.jpg', transformed_image[0])
-    cv2.destroyAllWindows()
-    return transformed_image[1]
-
-imageCropAndWarp()
-
