@@ -1,15 +1,25 @@
 import imp
-import cv2
 
 # Load the module from the file path
-imageCapture = imp.load_source('imageCapture', 'imageCapture.py')
-imageFixing = imp.load_source('imageFixing', 'Edge+PerspTrans.py')
-imageChopping = imp.load_source('chop_image_into_8x8', 'ChopAndIdentify.py.py')
-def main():
-    #imageCapture.takeImage()
-    corners = imageFixing.imageCropAndWarp()
-    image_with_grid = imageChopping.chop_image_into_8x8(corners)
-    cv2.imshow("Image with Grid", image_with_grid)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-main()
+imageCapture = imp.load_source('imageCapture', 'SnapAndCrop/Edge+PerspTrans.py')
+imageFixing = imp.load_source('imageFixing', 'SnapAndCrop/Edge+PerspTrans.py')
+imageProcessing = imp.load_source('imageProcessing', 'ImageProcessing.py')
+
+def main(inputImPath, outputImPath):
+    imageProcessing.resetGame()
+    #imageCapture.takeImage(inputImPath)
+    imageFixing.imageCropAndWarp(inputImPath, outputImPath)
+    [board_array, diff] = imageProcessing.im2boardstate(outputImPath)
+    [mof, neg_indices, pos_indices, arr_str] = imageProcessing.mofupdate(diff)
+    halfFEN = imageProcessing.FENupdate (arr_str)
+    [FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = imageProcessing.addFENextras_fm (mof, halfFEN)
+    [NBM, newFEN] = imageProcessing.StockfishComp (FEN)
+    [newBoardState] = imageProcessing.fen2mof(newFEN)
+    [repRow, repCol, oldRow, oldCol, newRow, newCol] = imageProcessing.movementDirections(board_array, newBoardState )
+    print('old board:', board_array)
+    print('new board', newBoardState)
+    print([repRow, repCol, oldRow, oldCol, newRow, newCol])
+main('Images/board.jpeg','Images/transformed_image.jpg')
+
+
+#imageProcessing.resetGame()

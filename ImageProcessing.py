@@ -5,7 +5,7 @@
 from stockfish import Stockfish
 
 # Create Stockfish instance
-stockfish = Stockfish(path=r"C:\Users\youss\Downloads\stockfish_15.1_win_x64_popcnt\stockfish_15.1_win_x64_popcnt\stockfish-windows-2022-x86-64-modern.exe")
+stockfish = Stockfish(path= '/usr/local/bin/stockfish')
 import cv2
 import numpy as np
 
@@ -14,7 +14,7 @@ import numpy as np
 ###############################################################################################################################
 
 
-def im2boardstate (): #Image to Boardstate and diff arrays
+def im2boardstate (impath): #Image to Boardstate and diff arrays
     
     #ARGS : Name of Image File
 
@@ -22,9 +22,9 @@ def im2boardstate (): #Image to Boardstate and diff arrays
 
     #Loads the image
     
-    image = cv2. imread('transformed_image.jpg')
+    image = cv2. imread(impath)
     image = cv2.GaussianBlur(image, (11,11), 0)
-    pbs = np.loadtxt(r"C:\Users\youss\trial\Text Files\boardstate.txt")
+    pbs = np.loadtxt('Text Files/boardstate.txt')
 
     # Get the dimensions of the image
     height, width, channels = image.shape
@@ -70,14 +70,14 @@ def im2boardstate (): #Image to Boardstate and diff arrays
             board_array[i // 8, i % 8] = 0
 
     # Saves Board Arrays
-    np.savetxt(r'C:\Users\youss\trial\Text Files\prevboardstate.txt', pbs, fmt='%d')
-    np.savetxt(r"C:\Users\youss\trial\Text Files\boardstate.txt", board_array, fmt='%d')
+    np.savetxt('Text Files/prevboardstate.txt', pbs, fmt='%d')
+    np.savetxt('Text Files/fenExtras.txt', board_array, fmt='%d')
 
     #Calculates Differences
     diff = board_array-pbs
 
     #saves the differences array
-    np.savetxt(r"C:\Users\youss\trial\Text Files\differences.txt", diff, fmt='%d')
+    np.savetxt('Text Files/differences.txt', diff, fmt='%d')
 
     return [board_array, diff]
 
@@ -85,25 +85,26 @@ def im2boardstate (): #Image to Boardstate and diff arrays
 #print(board_array)
 #print(diff)
 
+''' 
 def manimputboardstate (): #Manual change in Boardstate to new diff array
 
     #NO ARGUMENTS, JUST TAKES BOARD STATE AND PBS TEXT FILES FROM FOLDERS
     #RETURNS A DIFFERENCE ARRAY LIKE im2boardstate
 
-    array1 = np.loadtxt(r'C:\Users\youss\trial\Text Files\prevboardstate.txt')
-    array2 = np.loadtxt(r'C:\Users\youss\trial\Text Files\boardstate.txt')
+    array1 = np.loadtxt('Text Files/prevboardstate.txt')
+    array2 = np.loadtxt('Text Files/boardstate.txt')
 
     # create an empty 2D array to store the differences
     diff = array2-array1
 
     # Save the resulting array
-    np.savetxt(r'C:\Users\youss\trial\Text Files\differences.txt', diff, fmt='%d')
+    np.savetxt('Text Files/differences.txt', diff, fmt='%d')
 
-    pbs = np.loadtxt(r"C:\Users\youss\trial\Text Files\boardstate.txt")
-    np.savetxt(r'C:\Users\youss\trial\Text Files\prevboardstate.txt', pbs, fmt='%d')
+    pbs = np.loadtxt('Text Files/boardstate.txt')
+    np.savetxt('Text Files/prevboardstate.txt', pbs, fmt='%d')
 
     return diff
-
+'''
 # diff = manimputboardstate()
 #print(diff)
 
@@ -113,7 +114,7 @@ def mofupdate (diff): #Given Diff Array, Updates MOCK fen
     #RETURNS A NEW MOF STRING, Neg_Indicies, Pos_indicies for debugging purposes
 
     #opens mof file
-    with open(r"C:\Users\youss\trial\Text Files\mof.txt", 'r') as file:
+    with open('Text Files/mof.txt', 'r') as file:
         # Initialize an empty 2D array
         mof = [[]]
 
@@ -184,7 +185,7 @@ def mofupdate (diff): #Given Diff Array, Updates MOCK fen
     arr_str = "\n".join([" ".join(row) for row in mof])
 
     # save the string to a text file
-    with open(r"C:\Users\youss\trial\Text Files\mof.txt", "w") as f:
+    with open('Text Files/mof.txt', "w") as f:
         f.write(arr_str)
 
     return [mof, neg_indices, pos_indices, arr_str]
@@ -251,14 +252,14 @@ def FENupdate (newMOF): #Given Mock Fen gives peice information in FEN notatoin
 
 #halfFEN = FENupdate (MOFtxt)
 #print(halfFEN)
-
+'''
 def addFENextras_hm (newMOF, halfFEN): #Only if image is taken between EACH MOVE - given mock FEN and the peice information from halFEN Gets Full fen 
 
     #ARGS: New MOF and Half Fen string from FENUPDATE
     #RETURNS : FullFEN, Active Peice, White Castle KS, White Caslte QS, Black Castle KS, Black castle QS, Move #, Turn #
     mof = newMOF
     #Move Number, White Castle, Black Castle
-    with open(r"C:\Users\youss\trial\Text Files\fenExtras.txt", 'r') as file:
+    with open('Text Files/fenExtras.txt', 'r') as file:
         contents = file.read()
 
         # Split the contents by whitespace
@@ -333,17 +334,17 @@ def addFENextras_hm (newMOF, halfFEN): #Only if image is taken between EACH MOVE
     FEN = halfFEN +fenaddon
 
     #updates fenextras
-    with open(r"C:\Users\youss\trial\Text Files\fenExtras.txt", "w") as file:
+    with open('Text Files/fenExtras.txt', "w") as file:
         # Write the extracted values back to the file
         file.write(f"{value[0]} {str(value[1])} {str(value[2])} {str(value[3])} {str(value[4])}")
 
     #writes fen string into fen.txt
-    with open(r'C:\Users\youss\trial\Text Files\fen.txt', 'w') as file:
+    with open('Text Files/fen.txt', 'w') as file:
         # Read the contents of the file into a string
         file_contents = file.write(FEN)
 
     return [FEN, ap, WCK, WCQ, BCK, BCQ, mn, value[0], fenaddon]
-
+'''
 #[FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = addFENextras_hm (newMOF, halfFEN)
 #print(FEN)
 #print(fennaddon)
@@ -354,7 +355,7 @@ def addFENextras_fm (newMOF, halfFEN): #Only if image is taken between FULL MOVE
 
     #reads the fen extras 
     #Move Number, White Castle, Black Castle
-    with open(r"C:\Users\youss\trial\Text Files\fenExtras.txt", 'r') as file:
+    with open('Text Files/fenExtras.txt', 'r') as file:
         contents = file.read()
 
         # Split the contents by whitespace
@@ -425,12 +426,12 @@ def addFENextras_fm (newMOF, halfFEN): #Only if image is taken between FULL MOVE
     FEN = output_str+fenaddon
 
     #updates fenextras
-    with open(r"C:\Users\youss\trial\Text Files\fenExtras.txt", "w") as file:
+    with open('Text Files/fenExtras.txt', "w") as file:
         # Write the extracted values back to the file
         file.write(f"{value[0]} {str(value[1])} {str(value[2])} {str(value[3])} {str(value[4])}")
 
     #writes fen string into fen.txt
-    with open(r'C:\Users\youss\trial\Text Files\fen.txt', 'w') as file:
+    with open('Text Files/fen.txt', 'w') as file:
         # Read the contents of the file into a string
         file_contents = file.write(output_str)
 
@@ -489,7 +490,7 @@ def fen2mof(FEN: str):
 
     componenets = FEN.split()
     board = parse_fen(componenets[0])
-    with open(r"C:\Users\youss\trial\Text Files\mof.txt", "w") as f:
+    with open('Text Files/mof.txt', "w") as f:
         for i in range(8):
             for j in range(8):
                 f.write(str(board[i][j]))
@@ -498,7 +499,7 @@ def fen2mof(FEN: str):
     boardState = replace_letters(board)
     #print(boardState)
 
-    with open(r"C:\Users\youss\trial\Text Files\boardstate.txt", "w") as f:
+    with open('Text Files/boardstate.txt', "w") as f:
         for i in range(8):
             for j in range(8):
                 f.write(str(boardState[i][j]))
@@ -506,9 +507,10 @@ def fen2mof(FEN: str):
             f.write('\n')
     return [boardState]
 
-FEN = 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1'
-[newBoardState] = fen2mof(FEN)
-print(newBoardState)
+#I THINK THIS IS TESTING:
+#FEN = 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1'
+#[newBoardState] = fen2mof(FEN)
+#print('Board state:', newBoardState)
 
 
 def read_txt_file(file_path):
@@ -531,8 +533,8 @@ def read_txt_file(file_path):
     return array_2d
 
 def sfdiff ():
-    boardState = read_txt_file(r'C:\Users\youss\trial\Text Files\boardstate.txt')
-    prevboardState = read_txt_file(r'C:\Users\youss\trial\Text Files\prevboardstate.txt')
+    boardState = read_txt_file('Text Files/boardstate.txt')
+    prevboardState = read_txt_file('Text Files/prevboardstate.txt')
     diff = boardState-prevboardState
 
     return diff
@@ -607,3 +609,60 @@ def find_distances(move):
     print("Number of tiles to move:", tile_distance2, "left",  rank_distance2, "down")
     print("New position after move:", new_position2)
     return
+
+
+def movementDirections(oldBoard, newBoard):
+    oldRow = None
+    oldCol = None
+    newRow = None
+    newCol = None
+    repRow = None
+    repCol = None
+    oldBoard = oldBoard.tolist()
+    for i, (row1, row2) in enumerate(zip(oldBoard, newBoard)):
+        for j, (oldBoardElement, newBoardElement) in enumerate(zip(row1, row2)):
+            if int(oldBoardElement) != int(newBoardElement):
+                if (int(oldBoardElement) != 0) & (int(newBoardElement) != 0): #if neither are zero, means we're doing a replacement
+                    repRow = i
+                    repCol = j
+                    newRow = i
+                    newCol = j
+                    print("piece to remove")
+                    print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
+                    print(f"newBoard[{i}][{j}] = {newBoardElement}")
+                elif int(oldBoardElement) != 0: #if the old board is not zero but the new board is then this is the locaiton that the piece used to be
+                    oldRow = i
+                    oldCol = j
+                    print("found olf location")
+                    print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
+                    print(f"newBoard[{i}][{j}] = {newBoardElement}")
+                else: #meaning that the new board is not zero but the old board was so we're moving to a new spot without knocking anybody
+                    newRow = i
+                    newCol = j
+                    print("found new location")
+                    print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
+                    print(f"newBoard[{i}][{j}] = {newBoardElement}")
+
+    return [repRow, repCol, oldRow, oldCol, newRow, newCol]
+'''
+    for col in range(8):
+        for row in range(8):
+            if int(oldBoard[col][row]) != int(newBoard[col][row]):
+                if (int(oldBoard[col][row]) != 0) & (int(newBoard[col][row]) != 0): #if neither are zero, means we're doing a replacement
+                    repRow = row
+                    repCol = col
+                    newRow = row
+                    newCol = col
+                elif int(oldBoard[col][row]) != 0: #if the old board is not zero but the new board is then this is the locaiton that the piece used to be
+                    oldRow = row
+                    oldCol = col
+                else: #meaning that the new board is not zero but the old board was so we're moving to a new spot without knocking anybody
+                    newRow = row
+                    newCol = col
+'''
+
+
+
+def resetGame():
+    [board_array, diff] = im2boardstate('Images/resetBoard.jpg')
+    np.savetxt('Text Files/boardstate.txt', board_array, fmt='%d')
