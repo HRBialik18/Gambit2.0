@@ -32,7 +32,7 @@ while True:
         # the format for storing the images scrreenshotted
         #img_name = f'opencv_frame_{img_counter}'
         # saves the image as a png file
-        cv2.imwrite('output_image.jpg', frame)
+        cv2.imwrite('Images/raw_image.jpg', frame)
         print('screenshot taken')
         # the number of images automaticallly increases by 1
         img_counter += 1

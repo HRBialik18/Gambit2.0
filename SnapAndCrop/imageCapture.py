@@ -6,5 +6,6 @@ import cv2
 def takeImage():
     cam = cv2.VideoCapture(0)
     ret, frame = cam.read()
-    cv2.imwrite('output_image.jpg', frame)
+    cv2.imwrite('Images/raw_image.jpg', frame)
     cam.release()
+#takeImage()
