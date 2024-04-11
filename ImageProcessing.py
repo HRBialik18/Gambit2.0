@@ -25,7 +25,6 @@ def im2boardstate (impath): #Image to Boardstate and diff arrays
     image = cv2. imread(impath)
     image = cv2.GaussianBlur(image, (11,11), 0)
     pbs = np.loadtxt('Text Files/boardstate.txt')
-
     # Get the dimensions of the image
     height, width, channels = image.shape
 
@@ -618,7 +617,6 @@ def movementDirections(oldBoard, newBoard):
     newCol = None
     repRow = None
     repCol = None
-    oldBoard = oldBoard.tolist()
     for i, (row1, row2) in enumerate(zip(oldBoard, newBoard)):
         for j, (oldBoardElement, newBoardElement) in enumerate(zip(row1, row2)):
             if int(oldBoardElement) != int(newBoardElement):
@@ -627,21 +625,21 @@ def movementDirections(oldBoard, newBoard):
                     repCol = j
                     newRow = i
                     newCol = j
-                    print("piece to remove")
-                    print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
-                    print(f"newBoard[{i}][{j}] = {newBoardElement}")
+                    #print("piece to remove")
+                    #print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
+                    #print(f"newBoard[{i}][{j}] = {newBoardElement}")
                 elif int(oldBoardElement) != 0: #if the old board is not zero but the new board is then this is the locaiton that the piece used to be
                     oldRow = i
                     oldCol = j
-                    print("found olf location")
-                    print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
-                    print(f"newBoard[{i}][{j}] = {newBoardElement}")
+                    #print("found olf location")
+                    #print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
+                    #print(f"newBoard[{i}][{j}] = {newBoardElement}")
                 else: #meaning that the new board is not zero but the old board was so we're moving to a new spot without knocking anybody
                     newRow = i
                     newCol = j
-                    print("found new location")
-                    print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
-                    print(f"newBoard[{i}][{j}] = {newBoardElement}")
+                    #print("found new location")
+                    #print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
+                    #print(f"newBoard[{i}][{j}] = {newBoardElement}")
 
     return [repRow, repCol, oldRow, oldCol, newRow, newCol]
 '''
@@ -666,3 +664,9 @@ def movementDirections(oldBoard, newBoard):
 def resetGame():
     [board_array, diff] = im2boardstate('Images/resetBoard.jpg')
     np.savetxt('Text Files/boardstate.txt', board_array, fmt='%d')
+
+#testing move instructions
+#oldBoard = [[5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5],[0,0,0,2,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[2,2,2,0,2,2,2,2], [2,2,2,2,2,2,2,2]]
+#newBoardState = [[5,5,5,5,5,5,5,5],[5,5,5,0,5,5,5,5],[0,0,0,5,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[2,2,2,0,2,2,2,2], [2,2,2,2,2,2,2,2]]
+#[repRow, repCol, oldRow, oldCol, newRow, newCol] = movementDirections(oldBoard, newBoardState )
+#print([repRow, repCol, oldRow, oldCol, newRow, newCol])
