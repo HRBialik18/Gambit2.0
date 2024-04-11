@@ -615,8 +615,8 @@ def movementDirections(oldBoard, newBoard):
     oldCol = None
     newRow = None
     newCol = None
-    repRow = None
-    repCol = None
+    repRow = -1
+    repCol = -1
     for i, (row1, row2) in enumerate(zip(oldBoard, newBoard)):
         for j, (oldBoardElement, newBoardElement) in enumerate(zip(row1, row2)):
             if int(oldBoardElement) != int(newBoardElement):
