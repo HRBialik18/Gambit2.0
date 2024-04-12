@@ -70,7 +70,7 @@ def im2boardstate (impath): #Image to Boardstate and diff arrays
 
     # Saves Board Arrays
     np.savetxt('Text Files/prevboardstate.txt', pbs, fmt='%d')
-    np.savetxt('Text Files/fenExtras.txt', board_array, fmt='%d')
+    np.savetxt('Text Files/boardstate.txt', board_array, fmt='%d')
 
     #Calculates Differences
     diff = board_array-pbs
