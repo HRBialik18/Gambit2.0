@@ -25,10 +25,10 @@ CLIENT = InferenceHTTPClient(
 )
 
 
-result = CLIENT.infer("Images/raw_image.jpg", model_id="chessboard-1hk4y/3")
+result = CLIENT.infer("../Images/raw_image.jpg", model_id="chessboard-1hk4y/3")
 
 # Load the image
-original_img = cv2.imread('Images/raw_image.jpg')
+original_img = cv2.imread('../Images/raw_image.jpg')
 
 standard_width = 800
 standard_height = 600
@@ -38,7 +38,7 @@ coordinates = [(int(coord['x']), int(coord['y'])) for coord in result.get("predi
 
 def plot_coordinates(image_path, coordinates):
     # Load the image
-    image = plt.imread('Images/raw_image.jpg')
+    image = plt.imread('../Images/raw_image.jpg')
 
     # Plot the image
     plt.imshow(image)
