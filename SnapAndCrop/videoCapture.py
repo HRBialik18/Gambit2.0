@@ -5,7 +5,8 @@ import cv2
 cam = cv2.VideoCapture(0)
 
 # title of the app
-cv2.namedWindow('python webcam screenshot app')
+#this does not work with rasberry pi because it has no graphical interface
+# cv2.namedWindow('python webcam screenshot app')
 
 # let's assume the number of images gotten is 0
 img_counter = 0

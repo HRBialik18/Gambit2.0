@@ -1,4 +1,4 @@
-#!/home/pi/Desktop/Gambit2.0/venv/bin/python3
+#!/home/pi/Desktop/Gambit2.0/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
