@@ -610,19 +610,27 @@ def find_distances(move):
     return
 
 
-def movementDirections(oldBoard, newBoard):
-    oldRow = None
-    oldCol = None
-    newRow = None
-    newCol = None
-    repRow = -1
-    repCol = -1
+def movementDirections(oldBoard, oldFEN, newBoard, newFEN):
+    oldRow = 0
+    oldCol = 0
+    newRow = 0
+    newCol = 0
+    replacing = 0
+
+    oldFEN = oldFEN.split()
+    newFEN = newFEN.split()
+
+    if oldFEN[2] != newFEN[2]:
+        if oldFEN[2] == 'KQkq':
+            return "30000"
+        elif newFEN[2] == 'KQq':
+            return "40000"
+
     for i, (row1, row2) in enumerate(zip(oldBoard, newBoard)):
         for j, (oldBoardElement, newBoardElement) in enumerate(zip(row1, row2)):
             if int(oldBoardElement) != int(newBoardElement):
                 if (int(oldBoardElement) != 0) & (int(newBoardElement) != 0): #if neither are zero, means we're doing a replacement
-                    repRow = i
-                    repCol = j
+                    replacing = 1
                     newRow = i
                     newCol = j
                     #print("piece to remove")
@@ -641,7 +649,8 @@ def movementDirections(oldBoard, newBoard):
                     #print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
                     #print(f"newBoard[{i}][{j}] = {newBoardElement}")
 
-    return [repRow, repCol, oldRow, oldCol, newRow, newCol]
+    return f"{replacing}{oldRow}{oldCol}{newRow}{newCol}"
+
 '''
     for col in range(8):
         for row in range(8):
@@ -659,14 +668,36 @@ def movementDirections(oldBoard, newBoard):
                     newCol = col
 '''
 
+'''
+def get_chess_move(prev_fen, next_fen):
 
+    prev_fen = prev_fen.split()
+    next_fen = next_fen.split()
 
-def resetGame():
-    [board_array, diff] = im2boardstate('Images/resetBoard.jpg')
-    np.savetxt('Text Files/boardstate.txt', board_array, fmt='%d')
+    prev_board = prev_fen[0].split('/')
+    next_board = next_fen[0].split('/')
+    
+    # Check for castling
+    if prev_fen[2] != next_fen[2]:
+        if next_fen[2] == 'KQkq':
+            return "O-O~F"
+        elif next_fen[2] == 'KQq':
+            return "O-O-O~F"
 
-#testing move instructions
-#oldBoard = [[5,5,5,5,5,5,5,5],[5,5,5,5,5,5,5,5],[0,0,0,2,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[2,2,2,0,2,2,2,2], [2,2,2,2,2,2,2,2]]
-#newBoardState = [[5,5,5,5,5,5,5,5],[5,5,5,0,5,5,5,5],[0,0,0,5,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[2,2,2,0,2,2,2,2], [2,2,2,2,2,2,2,2]]
-#[repRow, repCol, oldRow, oldCol, newRow, newCol] = movementDirections(oldBoard, newBoardState )
-#print([repRow, repCol, oldRow, oldCol, newRow, newCol])
+    # Iterate over each square on the board
+    for rank in range(8):
+        for file in range(8):
+            # Check if the piece on the board has changed
+            if prev_board[rank][file] != next_board[rank][file]:
+                # Identify the starting and ending squares of the move
+                start_square = f"{chr(ord('a')+file)}{8-rank}"
+                end_square = f"{chr(ord('a')+file)}{8-rank-1}"
+                # Check if a capture occurred
+                if next_board[rank][file] != '.':
+                    return f"{start_square}~{end_square}~T"
+                else:
+                    return f"{start_square}~{end_square}~F"
+    
+    return "~F"  # If no differences are found
+'''
+
