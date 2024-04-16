@@ -9,9 +9,9 @@ const int buttonPin2 = 4;
 const int buttonPin3 = 5;
 
 // global variables
-int Page = 1;
 int difficulty = 5;
 bool gameStarted = false;
+bool lcdGameStarted = false;
 bool playerTurn = true; // value only local to arduino
 bool serialSent = false;
 bool serialReceived = false;
@@ -19,8 +19,10 @@ bool playerTurnEnded = false; // value is what is sent and received from pi
 bool robotTurnEnded = true; // value is what is sent and recevied from pi
 bool abortGame;
 bool validMove = false;
+bool gameOver;
+bool winner; // 0 white, 1 black
 
-/* 
+/*
 Send to Serial Monitor:
   difficulty
   gameStarted
@@ -51,6 +53,20 @@ void clearRow(int row){
   lcd.setCursor(0, row);
 }
 
+// reset back to default settings
+void reset(){
+  lcdGameStarted = false;
+  gameStarted = false;
+  playerTurn = true;
+  serialSent = false;
+  serialReceived = false;
+  abortGame = false;
+  gameOver = false;
+  playerTurnEnded = false;
+  robotTurnEnded = false;
+
+}
+
 void setup() {
   // Set up the LCD's number of columns and rows
   lcd.begin(16, 2);
@@ -65,6 +81,15 @@ void setup() {
   lcd.print("+");
   int difficulty = 5;
   bool gameStarted = false;
+  bool lcdGameStarted = false;
+  bool playerTurn = true; // value only local to arduino, decides which player moves first
+  bool serialSent = false;
+  bool serialReceived = false;
+  bool playerTurnEnded = false; // value is what is sent and received from pi
+  bool robotTurnEnded = true; // value is what is sent and recevied from pi
+  bool abortGame = false;
+  bool validMove = false;
+  bool gameOver = false;
 
   // Serial
   Serial.begin(9600);
@@ -81,7 +106,7 @@ void loop() {
   int buttonState3 = digitalRead(buttonPin3);
 
   // BEFORE GAME START
-  if(!gameStarted){
+  if(!lcdGameStarted){
     centerText("KINGS GAMBIT 2.0");
     lcd.setCursor(0, 1);
     lcd.print("-");
@@ -91,7 +116,7 @@ void loop() {
     lcd.print("+");
   }
   // Decrease difficulty
-  if(!gameStarted && buttonState1 == HIGH){
+  if(!lcdGameStarted && buttonState1 == HIGH){
     if(difficulty > 1) difficulty--;
     clearRow(0);
     centerText("Difficulty");
@@ -102,10 +127,11 @@ void loop() {
   }
 
   // Start Game
-  if(!gameStarted && buttonState2 == HIGH){
+  if(!lcdGameStarted && buttonState2 == HIGH){
     lcd.clear();
     centerText("Game Started");
     gameStarted = true;
+    lcdGameStarted = true;
 
     // send over information to pi over serial
     Serial.print(difficulty);
@@ -120,7 +146,7 @@ void loop() {
   }
 
   // Increase Difficulty
-  if(!gameStarted && buttonState3 == HIGH){
+  if(!lcdGameStarted && buttonState3 == HIGH){
     if(difficulty < 10) difficulty++;
     clearRow(0);
     centerText("Difficulty");
@@ -132,7 +158,7 @@ void loop() {
 
   // AFTER GAME START: should loop as opponent's or player's turn, dependent on what's received from serial, like which player moves first
   // Player's Turn
-  if(gameStarted && playerTurn){
+  if(lcdGameStarted && playerTurn){
     clearRow(0);
     centerText("YOUR TURN");
     lcd.setCursor(0, 1);
@@ -142,7 +168,7 @@ void loop() {
 
   }
   // Robot's Turn
-  if(gameStarted && !playerTurn){
+  if(lcdGameStarted && !playerTurn){
     clearRow(0);
     centerText("ROBOT TURN");
     lcd.setCursor(0, 1);
@@ -152,10 +178,11 @@ void loop() {
   }
 
   // ABORT GAME
-  if(gameStarted && buttonState1 == HIGH){
+  if(lcdGameStarted && buttonState1 == HIGH){
     // send to Pi that game has ended
-    playerTurn = false;
     abortGame = true;
+    serialSent = true;
+
     Serial.print(difficulty);
     Serial.print(",");
     Serial.print(gameStarted);
@@ -168,12 +195,12 @@ void loop() {
   }
 
   // Change Difficulty Mid Game (OPTIONAL)
-  if(gameStarted && buttonState2 == HIGH){
+  if(lcdGameStarted && buttonState2 == HIGH){
 
   }
 
   // END TURN
-  if(gameStarted && playerTurn && buttonState3 == HIGH){
+  if(lcdGameStarted && playerTurn && buttonState3 == HIGH){
     // indicate that player turn has ended
     playerTurnEnded = true;
 
@@ -193,43 +220,52 @@ void loop() {
   // Waiting for PI output after player ends turn
   if(serialSent && playerTurnEnded){
     // check if any data is sent from pi
-    if(Serial.available() > 0){
-      String data = Serial.readStringUntil('\n');
-
+    Serial.flush();
+    String data;
+    while(Serial.available() > 0){  
+      data = Serial.readStringUntil('\n');
+    }
       // parse data into variables
+      validMove = data.substring(0, 1);
+      gameOver = data.substring(4, 5);
+
+      // update serial status
       serialReceived = true;
       serialSent = false;
-    }
   }
 
   // Waiting for PI output after robot makes move
   if(serialSent && !playerTurnEnded){
     // check if any data is sent from pi
-    if(Serial.available() > 0){
-      String data = Serial.readStringUntil('\n');
-      
-      // parse data into variables
+    Serial.flush();
+    String data;
+    while(Serial.available() > 0){
+      data = Serial.readStringUntil('\n');
+    } 
+      // parse data into variables (ONLY NEED GAME OVER)
+      robotTurnEnded = data.substring(2, 3);
+      gameOver = data.substring(4, 5);
+
+      // update serial status
       serialReceived = true;
       serialSent = false;
-    }
   }
 
   // ABORT GAME: pi successfully reads and sends back aborting the game
-  if(abortGame){ // TODO: change conditional based on pi output
-    // set to default menu settings
-    abortGame = false;
-    gameStarted = false;
-    difficulty = 5;
-    
+  if(abortGame && serialReceived){ // TODO: change conditional based on pi output
     // display
     clearRow(0); 
     clearRow(1);
     centerText("GAME ABORTED");
+    abortGame = false;
     delay(2000);
+
+    // set to default menu settings
+    reset();
   }
 
   // MOVE NOT VALID: output lcd not valid move and 
-  if(gameStarted && playerTurnEnded && serialReceived && !validMove){
+  if(lcdGameStarted && playerTurnEnded && serialReceived && !validMove){
     clearRow(0);
     clearRow(1);
 
@@ -243,7 +279,7 @@ void loop() {
   }
   
   // MOVE VALID: player's turn is over and game continues
-  if(gameStarted && playerTurnEnded && serialReceived && validMove){
+  if(lcdGameStarted && playerTurnEnded && serialReceived && validMove){
     clearRow(0);
     clearRow(1);
     
@@ -257,9 +293,17 @@ void loop() {
   }
 
   // ROBOT TURN ENDS:
-  if(gameStarted && serialReceived && robotTurnEnded){
+  if(lcdGameStarted && serialReceived && robotTurnEnded){
     playerTurn = true;
     robotTurnEnded = false;
+  }
+
+  // GAME OVER
+  if(gameOver && serialReceived){
+    if(winner == 0) centerText("WHITE WINS");
+    else centerText("BLACK WINS");
+    delay(1000);
+    reset();
   }
 
   // if (Page == 1){
