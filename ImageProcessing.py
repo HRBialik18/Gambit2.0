@@ -609,6 +609,10 @@ def find_distances(move):
     print("New position after move:", new_position2)
     return
 
+def updateELO (diff):
+    elo = 500+150*diff
+    stockfish.set_elo_rating(elo)
+
 
 def movementDirections(oldBoard, oldFEN, newBoard, newFEN):
     oldRow = 0
