@@ -8,3 +8,4 @@ def takeImage(impath):
     ret, frame = cam.read()
     cv2.imwrite(impath, frame)
     cam.release()
+#takeImage('Images/raw_image.jpg')
