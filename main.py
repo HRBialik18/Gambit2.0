@@ -28,31 +28,34 @@ def main(inputImPath, outputImPath):
     data = data.split(',')
 
     if data[1] == '1':
-        print("got here1")
+        print("game setup")
         imageProcessing.updateELO(int(data[0]))
         resetGame.resetGame()
     elif data[2] == '1': 
-        print("got here2")      
+        print("finding robot move")      
         imageCapture.takeImage(inputImPath)
         imageFixing.imageCropAndWarp(inputImPath, outputImPath)
         [oldBoard, diff] = imageProcessing.im2boardstate(outputImPath)
         [mof, neg_indices, pos_indices, arr_str] = imageProcessing.mofupdate(diff)  #issue in generating the mock fen
         halfFEN = imageProcessing.FENupdate (arr_str)
         [FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = imageProcessing.addFENextras_fm (mof, halfFEN)
-        [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN) #TODO check if it gives back a valid fen etc
-        [newBoardState] = imageProcessing.fen2mof(newFEN)
-        #oldBoard = oldBoard.tolist() # because it comes in as a numpy
-        answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
-        print('old board:', oldBoard)
-        numpyNewBoard = np.array(newBoardState) #helps me visualize
-        print('new board:', numpyNewBoard)
-        print("got here3")
-        print(answer)
-        ser2.write(answer.encode())
-        robotWorking = True
-        while robotWorking:
-            if ser2.in_waiting > 0:
-                ser1.write("0,1, 1".encode())
+        [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN)
+        if NBMnotValid: #not sure that this is done correctly
+            ser1.write("0,0,0".encode())
+        else:
+            [newBoardState] = imageProcessing.fen2mof(newFEN)
+            #oldBoard = oldBoard.tolist() # because it comes in as a numpy
+            answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
+            print('old board:', oldBoard)
+            numpyNewBoard = np.array(newBoardState) #helps me visualize
+            print('new board:', numpyNewBoard)
+            print("actually gonna do the move")
+            print(answer)
+            ser2.write(answer.encode())
+            robotWorking = True
+            while robotWorking:
+                if ser2.in_waiting > 0:
+                    ser1.write("0,1,1".encode())
     elif data[2]:
         print("aborted game")
         ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
@@ -62,3 +65,4 @@ while True:
 
 
 #imageProcessing.resetGame()
+
