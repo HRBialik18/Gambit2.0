@@ -5,7 +5,7 @@
 from stockfish import Stockfish
 
 # Create Stockfish instance
-stockfish = Stockfish(path= '/usr/local/bin/stockfish')
+stockfish = Stockfish(path= './stockfish')
 import cv2
 import numpy as np
 
