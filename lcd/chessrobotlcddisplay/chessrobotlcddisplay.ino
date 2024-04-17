@@ -64,7 +64,6 @@ void reset(){
   gameOver = false;
   playerTurnEnded = false;
   robotTurnEnded = false;
-
 }
 
 void setup() {
@@ -122,6 +121,10 @@ void loop() {
     centerText("Difficulty");
     lcd.setCursor(7, 1);
     lcd.print(difficulty);
+    if(difficulty == 9){
+      lcd.setCursor(8, 1);
+      lcd.print(" ");
+    }
     delay(500);
     centerText("KINGS GAMBIT 2.0");
   }
@@ -294,8 +297,10 @@ void loop() {
 
   // ROBOT TURN ENDS:
   if(lcdGameStarted && serialReceived && robotTurnEnded){
+    centerText("ROBOT TURN END");
     playerTurn = true;
     robotTurnEnded = false;
+    delay(1000);
   }
 
   // GAME OVER
