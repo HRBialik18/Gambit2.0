@@ -653,7 +653,7 @@ def movementDirections(oldBoard, oldFEN, newBoard, newFEN):
                     #print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
                     #print(f"newBoard[{i}][{j}] = {newBoardElement}")
 
-    return f"{replacing}{oldRow}{oldCol}{newRow}{newCol}"
+    return f"{replacing}{oldCol}{oldRow}{newCol}{newRow}"
 
 '''
     for col in range(8):
