@@ -9,3 +9,13 @@ def takeImage(impath):
     cv2.imwrite(impath, frame)
     cam.release()
 #takeImage('Images/raw_image.jpg')
+
+
+
+
+
+def testingCropping():
+    import imp
+    imageFixing = imp.load_source('imageFixing', 'SnapAndCrop/Edge+PerspTrans.py') 
+    takeImage('Images/raw_image.jpg')
+    imageFixing.imageCropAndWarp('Images/raw_image.jpg','Images/transformed_image.jpg')
