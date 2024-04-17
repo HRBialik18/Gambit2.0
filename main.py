@@ -40,7 +40,7 @@ def main(inputImPath, outputImPath):
         halfFEN = imageProcessing.FENupdate (arr_str)
         [FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = imageProcessing.addFENextras_fm (mof, halfFEN)
         [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN)
-        #if NBMnotValid: #not sure that this is done correctly
+        #if NBMnotValid: #not sure that this is done correctly. Supposed to recieve from the motors that the move is complete and give that info to the lcd
             #ser1.write("0,0,0".encode())
        # else:
         [newBoardState] = imageProcessing.fen2mof(newFEN)
@@ -56,7 +56,7 @@ def main(inputImPath, outputImPath):
         #while robotWorking:
             #if ser2.in_waiting > 0:
         #ser1.write("1,1,0".encode())
-    elif data[2] == 1:
+    elif data[2] == '1':
         print("aborted game")
         ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
 
