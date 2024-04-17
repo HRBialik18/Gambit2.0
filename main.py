@@ -8,8 +8,8 @@ imageFixing = imp.load_source('imageFixing', 'SnapAndCrop/Edge+PerspTrans.py')
 imageProcessing = imp.load_source('imageProcessing', 'ImageProcessing.py')
 resetGame = imp.load_source('resetGame', 'Reset.py')
 
-serial_port1 = '/dev/cu.usbmodem141201'  # Replace 'COM3' with the appropriate serial port
-serial_port2 = '/dev/cu.usbmodem141101'#'/dev/cu.usbmodem141101 - IOUSBHostDevice' #'/dev/cu.usbmodem14301' 
+serial_port1 = '/dev/ttyACM0'  # Replace 'COM3' with the appropriate serial port
+serial_port2 = '/dev/ttyACM1'#'/dev/cu.usbmodem141101 - IOUSBHostDevice' #'/dev/cu.usbmodem14301' 
 baud_rate = 9600
 
 # Create serial connection
@@ -42,7 +42,7 @@ def main(inputImPath, outputImPath):
         [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN)
         #if NBMnotValid: #not sure that this is done correctly
             #ser1.write("0,0,0".encode())
-        #else:
+       # else:
         [newBoardState] = imageProcessing.fen2mof(newFEN)
         #oldBoard = oldBoard.tolist() # because it comes in as a numpy
         answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
@@ -52,11 +52,11 @@ def main(inputImPath, outputImPath):
         print("actually gonna do the move")
         print(answer)
         ser2.write(answer.encode())
-        #robotWorking = True #Supposed to recieve from the robot that the move is completed so that we can tell the lcd screen
+        robotWorking = True
         #while robotWorking:
             #if ser2.in_waiting > 0:
-        ser1.write("0,1,1".encode())
-    elif data[2]:
+        #ser1.write("1,1,0".encode())
+    elif data[2] == 1:
         print("aborted game")
         ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
 
