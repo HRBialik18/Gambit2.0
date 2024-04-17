@@ -13,10 +13,10 @@ serial_port2 = '/dev/cu.usbmodem14301'#'/dev/cu.usbmodem141101 - IOUSBHostDevice
 baud_rate = 9600
 
 # Create serial connection
-ser1 = serial.Serial(serial_port1, baud_rate)
-ser2 = serial.Serial(serial_port2, baud_rate)
+#ser1 = serial.Serial(serial_port1, baud_rate)
+#ser2 = serial.Serial(serial_port2, baud_rate)
 
-
+'''
 def main(inputImPath, outputImPath):
     waitingForSerial = True
     data = 0
@@ -59,10 +59,17 @@ def main(inputImPath, outputImPath):
     elif data[2]:
         print("aborted game")
         ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
+'''
 
-while True:
-    main('Images/raw_image.jpg','Images/transformed_image.jpg')
+#while True:
+    #main('Images/raw_image.jpg','Images/transformed_image.jpg')
 
 
 #imageProcessing.resetGame()
 
+def test(inputImPath, outputImPath):
+    imageCapture.takeImage(inputImPath)
+    imageFixing.imageCropAndWarp(inputImPath, outputImPath)
+    [oldBoard, diff] = imageProcessing.im2boardstate(outputImPath)
+    print('old board:', oldBoard)
+test('Images/raw_image.jpg','Images/transformed_image.jpg')
