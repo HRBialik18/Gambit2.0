@@ -27,14 +27,22 @@ def main(inputImPath, outputImPath):
             waitingForSerial = False
     data = data.split(',')
 
+    # data[0] = difficulty TODO: implement difficulty
+
+    # data[1] = gameStarted (1 if game started, 0 if not)
     if data[1] == '1':
         print("game setup")
         imageProcessing.updateELO(int(data[0]))
         resetGame.resetGame()
+
+    # data[2] = playerTurnEnded (1 if player turn ended, 0 if not)
     elif data[2] == '1': 
-        print("finding robot move")      
+        print("finding robot move")  
+        # image capture    
         imageCapture.takeImage(inputImPath)
         imageFixing.imageCropAndWarp(inputImPath, outputImPath)
+
+        # image processing and stockfish
         [oldBoard, diff] = imageProcessing.im2boardstate(outputImPath)
         [mof, neg_indices, pos_indices, arr_str] = imageProcessing.mofupdate(diff) 
         halfFEN = imageProcessing.FENupdate (arr_str)
@@ -46,17 +54,23 @@ def main(inputImPath, outputImPath):
         [newBoardState] = imageProcessing.fen2mof(newFEN)
         #oldBoard = oldBoard.tolist() # because it comes in as a numpy
         answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
+
+        #helps me visualize the board states
         print('old board:', oldBoard)
-        numpyNewBoard = np.array(newBoardState) #helps me visualize
+        numpyNewBoard = np.array(newBoardState)
         print('new board:', numpyNewBoard)
         print("actually gonna do the move")
         print(answer)
+
+        # send answer to lcd
         ser2.write(answer.encode())
         robotWorking = True
         #while robotWorking:
             #if ser2.in_waiting > 0:
         #ser1.write("1,1,0".encode())
-    elif data[2] == '1':
+    
+    # data[3] = abortGame (1 if game aborted, 0 if not)
+    elif data[3] == '1':
         print("aborted game")
         ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
 
