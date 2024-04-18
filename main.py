@@ -8,8 +8,8 @@ imageFixing = imp.load_source('imageFixing', 'SnapAndCrop/Edge+PerspTrans.py')
 imageProcessing = imp.load_source('imageProcessing', 'ImageProcessing.py')
 resetGame = imp.load_source('resetGame', 'Reset.py')
 
-serial_port1 = '/dev/cu.usbmodem14301'  # Replace 'COM3' with the appropriate serial port
-serial_port2 = '/dev/cu.usbmodem14301'#'/dev/cu.usbmodem141101 - IOUSBHostDevice' #'/dev/cu.usbmodem14301' 
+serial_port1 = '/dev/ttyACM0'  # Replace 'COM3' with the appropriate serial port
+serial_port2 = '/dev/ttyACM1'#'/dev/cu.usbmodem141101 - IOUSBHostDevice' #'/dev/cu.usbmodem14301' 
 baud_rate = 9600
 
 # Create serial connection
@@ -36,29 +36,30 @@ def main(inputImPath, outputImPath):
         imageCapture.takeImage(inputImPath)
         imageFixing.imageCropAndWarp(inputImPath, outputImPath)
         [oldBoard, diff] = imageProcessing.im2boardstate(outputImPath)
-        [mof, neg_indices, pos_indices, arr_str] = imageProcessing.mofupdate(diff)  #issue in generating the mock fen
+        [mof, neg_indices, pos_indices, arr_str] = imageProcessing.mofupdate(diff) 
         halfFEN = imageProcessing.FENupdate (arr_str)
         [FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = imageProcessing.addFENextras_fm (mof, halfFEN)
         [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN)
-        if NBMnotValid: #not sure that this is done correctly
-            ser1.write("0,0,0".encode())
-        else:
-            [newBoardState] = imageProcessing.fen2mof(newFEN)
-            #oldBoard = oldBoard.tolist() # because it comes in as a numpy
-            answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
-            print('old board:', oldBoard)
-            numpyNewBoard = np.array(newBoardState) #helps me visualize
-            print('new board:', numpyNewBoard)
-            print("actually gonna do the move")
-            print(answer)
-            ser2.write(answer.encode())
-            robotWorking = True
-            while robotWorking:
-                if ser2.in_waiting > 0:
-                    ser1.write("0,1,1".encode())
-    elif data[2]:
+        #if NBMnotValid: #not sure that this is done correctly. Supposed to recieve from the motors that the move is complete and give that info to the lcd
+            #ser1.write("0,0,0".encode())
+       # else:
+        [newBoardState] = imageProcessing.fen2mof(newFEN)
+        #oldBoard = oldBoard.tolist() # because it comes in as a numpy
+        answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
+        print('old board:', oldBoard)
+        numpyNewBoard = np.array(newBoardState) #helps me visualize
+        print('new board:', numpyNewBoard)
+        print("actually gonna do the move")
+        print(answer)
+        ser2.write(answer.encode())
+        robotWorking = True
+        #while robotWorking:
+            #if ser2.in_waiting > 0:
+        #ser1.write("1,1,0".encode())
+    elif data[2] == '1':
         print("aborted game")
         ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
+
 
 while True:
     main('Images/raw_image.jpg','Images/transformed_image.jpg')
@@ -66,3 +67,9 @@ while True:
 
 #imageProcessing.resetGame()
 
+def test(inputImPath, outputImPath):
+    imageCapture.takeImage(inputImPath)
+    imageFixing.imageCropAndWarp(inputImPath, outputImPath)
+    [oldBoard, diff] = imageProcessing.im2boardstate(outputImPath)
+    print('old board:', oldBoard)
+#test('Images/raw_image.jpg','Images/transformed_image.jpg')

@@ -5,7 +5,7 @@
 from stockfish import Stockfish
 
 # Create Stockfish instance
-stockfish = Stockfish(path= '/usr/local/bin/stockfish')
+stockfish = Stockfish(path= './stockfish')
 import cv2
 import numpy as np
 
@@ -653,7 +653,7 @@ def movementDirections(oldBoard, oldFEN, newBoard, newFEN):
                     #print(f"oldBoard[{i}][{j}] = {oldBoardElement}")
                     #print(f"newBoard[{i}][{j}] = {newBoardElement}")
 
-    return f"{replacing}{oldRow}{oldCol}{newRow}{newCol}"
+    return f"{replacing}{oldCol}{oldRow}{newCol}{newRow}"
 
 '''
     for col in range(8):

@@ -31,7 +31,7 @@ def imageCropAndWarp(inputImPath, outputImPath):
     transformed_image = perspective_transform_to_square (original_img, corners)
     #cv2.imshow('Transformed Image', transformed_image)
     cv2.imwrite(outputImPath, transformed_image)
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
     return
 
 #Helper functions

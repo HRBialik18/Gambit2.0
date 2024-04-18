@@ -19,3 +19,4 @@ def testingCropping():
     imageFixing = imp.load_source('imageFixing', 'SnapAndCrop/Edge+PerspTrans.py') 
     takeImage('Images/raw_image.jpg')
     imageFixing.imageCropAndWarp('Images/raw_image.jpg','Images/transformed_image.jpg')
+#testingCropping()
