@@ -153,7 +153,7 @@ void loop() {
     if(difficulty < 10) difficulty++;
     clearRow(0);
     centerText("Difficulty");
-    lcd.setCursor(7, 1);
+    lcd.setCursor(7, 1);  
     lcd.print(difficulty);
     delay(500);
     centerText("KINGS GAMBIT 2.0");
@@ -162,6 +162,7 @@ void loop() {
   // AFTER GAME START: should loop as opponent's or player's turn, dependent on what's received from serial, like which player moves first
   // Player's Turn
   if(lcdGameStarted && playerTurn){
+    gameStarted = false;
     clearRow(0);
     centerText("YOUR TURN");
     lcd.setCursor(0, 1);
@@ -172,6 +173,7 @@ void loop() {
   }
   // Robot's Turn
   if(lcdGameStarted && !playerTurn){
+    gameStarted = false;
     clearRow(0);
     centerText("ROBOT TURN");
     lcd.setCursor(0, 1);
@@ -216,12 +218,18 @@ void loop() {
     Serial.print(",");
     Serial.print(abortGame);
     Serial.println();
+    delay(1000);
   }
 
   // OUTPUTS FROM PI
 
   // Waiting for PI output after player ends turn
   if(serialSent && playerTurnEnded){
+    // display that serial was sent
+    clearRow(0);
+    clearRow(1);
+    centerText("LOADING");
+
     // check if any data is sent from pi
     Serial.flush();
     String data;
@@ -239,13 +247,18 @@ void loop() {
 
   // Waiting for PI output after robot makes move
   if(serialSent && !playerTurnEnded){
+    // display that serial was sent
+    clearRow(0);
+    clearRow(1);
+    centerText("ANALYZING");
+
     // check if any data is sent from pi
     Serial.flush();
     String data;
     while(Serial.available() > 0){
       data = Serial.readStringUntil('\n');
     } 
-      // parse data into variables (ONLY NEED GAME OVER)
+      // parse data into variables
       robotTurnEnded = data.substring(2, 3);
       gameOver = data.substring(4, 5);
 
@@ -254,8 +267,8 @@ void loop() {
       serialSent = false;
   }
 
-  // ABORT GAME: pi successfully reads and sends back aborting the game
-  if(abortGame && serialReceived){ // TODO: change conditional based on pi output
+  // ABORT GAME FROM SERIAL: pi successfully reads and sends back aborting the game
+  if(abortGame && serialReceived){
     // display
     clearRow(0); 
     clearRow(1);
@@ -267,7 +280,7 @@ void loop() {
     reset();
   }
 
-  // MOVE NOT VALID: output lcd not valid move and 
+  // MOVE NOT VALID FROM SERIAL: output lcd not valid move and 
   if(lcdGameStarted && playerTurnEnded && serialReceived && !validMove){
     clearRow(0);
     clearRow(1);
@@ -281,7 +294,7 @@ void loop() {
     delay(1000);
   }
   
-  // MOVE VALID: player's turn is over and game continues
+  // MOVE VALID FROM SERIAL: player's turn is over and game continues
   if(lcdGameStarted && playerTurnEnded && serialReceived && validMove){
     clearRow(0);
     clearRow(1);
@@ -295,11 +308,12 @@ void loop() {
     delay(1000);
   }
 
-  // ROBOT TURN ENDS:
+  // ROBOT TURN ENDS FROM SERIAL:
   if(lcdGameStarted && serialReceived && robotTurnEnded){
     centerText("ROBOT TURN END");
     playerTurn = true;
     robotTurnEnded = false;
+    serialReceived = false;
     delay(1000);
   }
 
@@ -307,6 +321,7 @@ void loop() {
   if(gameOver && serialReceived){
     if(winner == 0) centerText("WHITE WINS");
     else centerText("BLACK WINS");
+    serialReceived = false;
     delay(1000);
     reset();
   }
