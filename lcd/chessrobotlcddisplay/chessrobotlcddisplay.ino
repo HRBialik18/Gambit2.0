@@ -190,6 +190,7 @@ void loop() {
     // send to Pi that game has ended
     abortGame = true;
     serialSent = true;
+    playerTurnEnded = true;
 
     Serial.print(difficulty);
     Serial.print(",");
@@ -234,7 +235,7 @@ void loop() {
     clearRow(1);
     // lcd.setCursor(0, 1);
     // lcd.print("ABORT");
-    centerText("LOADING");
+    centerText("THINKING");
 
     // wait until serial is populated of robot's turn
     while(!Serial.available()){
@@ -323,23 +324,27 @@ void loop() {
     // display
     clearRow(0);
     clearRow(1);
-    centerText("SYSTEM ERROR");
+    centerText("BAD PICTURE");
 
     // restart to player's turn
+    playerTurnEnded = false;
     playerTurn = true;
     serialReceived = false;
     validMove = false;
     gameOver = false;
     error = false;
-    delay(1000);
+    delay(3000);
   }
 
   // ABORT GAME FROM SERIAL: pi successfully reads and sends back aborting the game
-  if(abortGame && serialReceived){
+  if(abortGame && serialReceived && gameOver){
     // display
     clearRow(0); 
     clearRow(1);
     centerText("GAME ABORTED");
+
+    gameStarted = false;
+    lcdGameStarted = false;
     abortGame = false;
     delay(2000);
 
@@ -370,6 +375,7 @@ void loop() {
     validMove = false;
     playerTurn = true;
     serialReceived = false;
+    playerTurnEnded = true;
 
     centerText("VALID MOVE");
     delay(1000);
