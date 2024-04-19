@@ -236,7 +236,7 @@ void loop() {
     // lcd.print("ABORT");
     centerText("LOADING");
 
-    // wait until serial is populated
+    // wait until serial is populated of robot's turn
     while(!Serial.available()){
       // buttonState1 = digitalRead(buttonPin1);
       // // abort the game
@@ -265,23 +265,23 @@ void loop() {
         data = Serial.readStringUntil('\n');
       }
         // parse data into variables
-        validMove = data.substring(4, 5);
-        gameOver = data.substring(2, 3);
-        error = data.substring(6, 7);
+        validMove = data.substring(4, 5).toInt();
+        gameOver = data.substring(2, 3).toInt();
+        error = data.substring(6, 7).toInt();
     }
     // update serial status
     serialReceived = true;
     serialSent = false;
   }
 
-  // Waiting for PI output after robot makes move
+  // THIS TECHNICALLY NEVER RUNS: Waiting for PI output after robot makes move
   if(serialSent && !playerTurnEnded){
     // display that serial was sent
     clearRow(0);
     clearRow(1);
     centerText("ANALYZING");
 
-    // wait until serial is populated
+    // wait until serial is populated of robot's turn
     while(!Serial.available()){
       // buttonState1 = digitalRead(buttonPin1);
       // // abort the game
@@ -309,8 +309,8 @@ void loop() {
       data = Serial.readStringUntil('\n');
     } 
       // parse data into variables
-      robotTurnEnded = data.substring(0, 1);
-      gameOver = data.substring(2, 3);
+      robotTurnEnded = data.substring(0, 1).toInt();
+      gameOver = data.substring(2, 3).toInt();
 
       // update serial status
       serialReceived = true;
@@ -366,9 +366,9 @@ void loop() {
     clearRow(0);
     clearRow(1);
     
-    // robot's turn
+    // player goes since robot has already done their turn
     validMove = false;
-    playerTurn = false;
+    playerTurn = true;
     serialReceived = false;
 
     centerText("VALID MOVE");

@@ -610,7 +610,7 @@ def find_distances(move):
     return
 
 def updateELO (diff):
-    elo = 500+150*diff
+    elo = 3500 / (11 - diff)
     stockfish.set_elo_rating(elo)
 
 
