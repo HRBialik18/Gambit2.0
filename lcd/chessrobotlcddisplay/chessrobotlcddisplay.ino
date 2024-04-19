@@ -21,6 +21,7 @@ bool abortGame;
 bool validMove = false;
 bool gameOver;
 bool winner; // 0 white, 1 black
+bool error = false;
 
 /*
 Send to Serial Monitor:
@@ -29,10 +30,11 @@ Send to Serial Monitor:
   playerTurnEnded
   abortGame
 
-Sent from Pi:
-  validMove
+Sent from Pi: 
   robotTurnEnded
   gameOver
+  validMove
+  error
 */
 
 void centerText(String text) {
@@ -64,6 +66,7 @@ void reset(){
   gameOver = false;
   playerTurnEnded = false;
   robotTurnEnded = false;
+  error = false;
 }
 
 void setup() {
@@ -208,6 +211,7 @@ void loop() {
   if(lcdGameStarted && playerTurn && buttonState3 == HIGH){
     // indicate that player turn has ended
     playerTurnEnded = true;
+    serialSent = true;
 
     // send over information over serial
     Serial.print(difficulty);
@@ -223,26 +227,51 @@ void loop() {
 
   // OUTPUTS FROM PI
 
-  // Waiting for PI output after player ends turn
+  // Waiting for PI output after PLAYER ends turn
   if(serialSent && playerTurnEnded){
     // display that serial was sent
     clearRow(0);
     clearRow(1);
+    // lcd.setCursor(0, 1);
+    // lcd.print("ABORT");
     centerText("LOADING");
 
-    // check if any data is sent from pi
-    Serial.flush();
-    String data;
-    while(Serial.available() > 0){  
-      data = Serial.readStringUntil('\n');
-    }
-      // parse data into variables
-      validMove = data.substring(0, 1);
-      gameOver = data.substring(4, 5);
+    // wait until serial is populated
+    while(!Serial.available()){
+      // buttonState1 = digitalRead(buttonPin1);
+      // // abort the game
+      // if(buttonState1 == HIGH){
+      //   abortGame = true;
+      //   serialSent = true;
 
-      // update serial status
-      serialReceived = true;
-      serialSent = false;
+      //   Serial.print(difficulty);
+      //   Serial.print(",");
+      //   Serial.print(gameStarted);
+      //   Serial.print(",");
+      //   Serial.print(playerTurnEnded);
+      //   Serial.print(",");
+      //   Serial.print(abortGame);
+      //   Serial.println();
+      //   delay(500);
+      //   break;
+      // }
+    }
+    // if abort game, break
+    if(!abortGame){
+      // check if any data is sent from pi
+      Serial.flush();
+      String data;
+      while(Serial.available() > 0){  
+        data = Serial.readStringUntil('\n');
+      }
+        // parse data into variables
+        validMove = data.substring(4, 5);
+        gameOver = data.substring(2, 3);
+        error = data.substring(6, 7);
+    }
+    // update serial status
+    serialReceived = true;
+    serialSent = false;
   }
 
   // Waiting for PI output after robot makes move
@@ -252,6 +281,27 @@ void loop() {
     clearRow(1);
     centerText("ANALYZING");
 
+    // wait until serial is populated
+    while(!Serial.available()){
+      // buttonState1 = digitalRead(buttonPin1);
+      // // abort the game
+      // if(buttonState1 == HIGH){
+      //   abortGame = true;
+      //   serialSent = true;
+
+      //   Serial.print(difficulty);
+      //   Serial.print(",");
+      //   Serial.print(gameStarted);
+      //   Serial.print(",");
+      //   Serial.print(playerTurnEnded);
+      //   Serial.print(",");
+      //   Serial.print(abortGame);
+      //   Serial.println();
+      //   delay(500);
+      //   break;
+      // }
+    }
+
     // check if any data is sent from pi
     Serial.flush();
     String data;
@@ -259,12 +309,29 @@ void loop() {
       data = Serial.readStringUntil('\n');
     } 
       // parse data into variables
-      robotTurnEnded = data.substring(2, 3);
-      gameOver = data.substring(4, 5);
+      robotTurnEnded = data.substring(0, 1);
+      gameOver = data.substring(2, 3);
 
       // update serial status
       serialReceived = true;
       serialSent = false;
+      delay(500);
+  }
+
+  // ERROR: if picture or other error is bad, restart player's turn
+  if(error){
+    // display
+    clearRow(0);
+    clearRow(1);
+    centerText("SYSTEM ERROR");
+
+    // restart to player's turn
+    playerTurn = true;
+    serialReceived = false;
+    validMove = false;
+    gameOver = false;
+    error = false;
+    delay(1000);
   }
 
   // ABORT GAME FROM SERIAL: pi successfully reads and sends back aborting the game
