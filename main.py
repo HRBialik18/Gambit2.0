@@ -34,8 +34,12 @@ def main(inputImPath, outputImPath):
         print("game setup")
         imageProcessing.updateELO(int(data[0]))
         resetGame.resetGame()
-
+    
+    elif data[3] == '1':
+        print("aborted game")
+        ser1.write("0,1,0,0".encode()) #[robotDone, gameOver, validMove, error]
     # data[2] = playerTurnEnded (1 if player turn ended, 0 if not)
+    
     elif data[2] == '1': 
         print("finding robot move")  
         # image capture    
@@ -43,36 +47,48 @@ def main(inputImPath, outputImPath):
         imageFixing.imageCropAndWarp(inputImPath, outputImPath)
 
         # image processing and stockfish
-        [oldBoard, diff] = imageProcessing.im2boardstate(outputImPath)
-        [mof, neg_indices, pos_indices, arr_str] = imageProcessing.mofupdate(diff) 
-        halfFEN = imageProcessing.FENupdate (arr_str)
-        [FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = imageProcessing.addFENextras_fm (mof, halfFEN)
-        [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN)
-        #if NBMnotValid: #not sure that this is done correctly. Supposed to recieve from the motors that the move is complete and give that info to the lcd
-            #ser1.write("0,0,0".encode())
-       # else:
-        [newBoardState] = imageProcessing.fen2mof(newFEN)
-        #oldBoard = oldBoard.tolist() # because it comes in as a numpy
-        answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
+        errCt = 0
+        [oldBoard, diff, mof, arr_str] = imageProcessing.iserror(outputImPath)
+        if isinstance(oldBoard, np.ndarray):
+            errCt = 5
+        while errCt < 3:
+            [oldBoard, diff, mof, arr_str] = imageProcessing.iserror(outputImPath)
+            errCt = errCt+1
+            
+        if errCt == 5:
+            halfFEN = imageProcessing.FENupdate (arr_str)
+            [FEN, ap, WCK, WCQ, BCK, BCQ, mn, tn, fennaddon] = imageProcessing.addFENextras_fm (mof, halfFEN)
+            [NBMnotValid, newFEN] = imageProcessing.StockfishComp(FEN)
+            #if NBMnotValid: #not sure that this is done correctly. Supposed to recieve from the motors that the move is complete and give that info to the lcd
+                #ser1.write("0,0,0".encode())
+            # else:
+            [newBoardState] = imageProcessing.fen2mof(newFEN)
+            #oldBoard = oldBoard.tolist() # because it comes in as a numpy
+            answer = imageProcessing.movementDirections(oldBoard, FEN, newBoardState, newFEN)
 
-        #helps me visualize the board states
-        print('old board:', oldBoard)
-        numpyNewBoard = np.array(newBoardState)
-        print('new board:', numpyNewBoard)
-        print("actually gonna do the move")
-        print(answer)
+            #helps me visualize the board states
+            print('old board:', oldBoard)
+            numpyNewBoard = np.array(newBoardState)
+            print('new board:', numpyNewBoard)
+            print("actually gonna do the move")
+            print(answer)
+            ser2.write(answer.encode())
 
-        # send answer to lcd
-        ser2.write(answer.encode())
-        robotWorking = True
-        #while robotWorking:
-            #if ser2.in_waiting > 0:
-        #ser1.write("1,1,0".encode())
+            # send answer to lcd
+            robotWorking = True
+            while robotWorking == True:
+                if ser2.in_waiting > 0: 
+                    print("got the response from motors")          
+                    data = ser2.readline().decode().strip()
+                    print(data)
+                    ser1.write("1,0,1,0".encode())
+                    robotWorking = False
+        else:
+            print("error")
+            ser1.write("1,0,0,1".encode())
     
     # data[3] = abortGame (1 if game aborted, 0 if not)
-    elif data[3] == '1':
-        print("aborted game")
-        ser1.write("0,1,1".encode()) #[robotDone, gameOver, validMove]
+    
 
 
 while True:

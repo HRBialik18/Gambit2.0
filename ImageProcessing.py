@@ -49,9 +49,9 @@ def im2boardstate (impath): #Image to Boardstate and diff arrays
 
         # Define color ranges for green and purple dots
         green_lower = np.array([35, 50, 50])
-        green_upper = np.array([75, 255, 255])
-        purple_lower = np.array([110, 50, 150])
-        purple_upper = np.array([160, 255, 255])
+        green_upper = np.array([95, 255, 255])
+        purple_lower = np.array([115, 50, 150])
+        purple_upper = np.array([155, 255, 255])
         # Create a mask for the green and purple dots
         green_mask = cv2.inRange(hsv, green_lower, green_upper)
         purple_mask = cv2.inRange(hsv, purple_lower, purple_upper)
@@ -68,19 +68,22 @@ def im2boardstate (impath): #Image to Boardstate and diff arrays
         else:
             board_array[i // 8, i % 8] = 0
 
+    diff = board_array-pbs
+    numdiffs = np.count_nonzero(diff)
+    print (board_array)
     # Saves Board Arrays
+
     np.savetxt('Text Files/prevboardstate.txt', pbs, fmt='%d')
     np.savetxt('Text Files/boardstate.txt', board_array, fmt='%d')
-
-    #Calculates Differences
-    diff = board_array-pbs
-
-    #saves the differences array
     np.savetxt('Text Files/differences.txt', diff, fmt='%d')
-
+    if numdiffs > 4:
+        board_array = pbs
+        np.savetxt('Text Files/boardstate.txt', board_array, fmt='%d') 
+        diff = 'Image Error'
+    
     return [board_array, diff]
 
-#[board_array, diff] = im2boardstate('image2.jpg')
+#[board_array, diff] = im2boardstate("Images\Tester Images\move2Cropped.jpg")
 #print(board_array)
 #print(diff)
 
@@ -107,17 +110,15 @@ def manimputboardstate (): #Manual change in Boardstate to new diff array
 # diff = manimputboardstate()
 #print(diff)
 
-def mofupdate (diff): #Given Diff Array, Updates MOCK fen
-
+def mofupdate(diff):
     #ARGS: TAKES A DIFFERENCE ARRAY FROM EITHER im2boardstate or manimputboardstate
     #RETURNS A NEW MOF STRING, Neg_Indicies, Pos_indicies for debugging purposes
 
-    #opens mof file
+    #opens mof file    with open('Text Files/mof.txt', 'r') as file:
+    # Initialize an empty 2D array
+    mof = [[]]
+    # Read the file one character at a time
     with open('Text Files/mof.txt', 'r') as file:
-        # Initialize an empty 2D array
-        mof = [[]]
-
-        # Read the file one character at a time
         for char in file.read():
             # Ignore spaces and newlines
             if char != ' ' and char != '\n':
@@ -127,72 +128,87 @@ def mofupdate (diff): #Given Diff Array, Updates MOCK fen
                 if len(mof[-1]) == 8:
                     mof.append([])
 
+    # notes locations of the negative and positive values in differences
+    oldMOF = mof
+    if isinstance(diff, np.ndarray):
+        neg_indices = np.argwhere(diff < 0)
+        pos_indices = np.argwhere(diff > 0)
+        # update MOF file
+        if len(neg_indices) == 1 and len(pos_indices) == 1:  # Standard movements (no takes) or white takes black
+            # for one negative value and one positive value
+            mof[pos_indices[0][0]][pos_indices[0][1]] = mof[neg_indices[0][0]][neg_indices[0][1]]
+            mof[neg_indices[0][0]][neg_indices[0][1]] = '0'
+        elif len(neg_indices) == 2 and len(pos_indices) == 0:  # black takes white
+            # for two negative values
+            row1, col1 = neg_indices[0]
+            row2, col2 = neg_indices[1]
+            if abs(diff[row1][col1]) > abs(diff[row2][col2]):
+                mof[row1][col1] = mof[row2][col2]
+                mof[row2][col2] = '0'
+            else:
+                mof[row2][col2] = mof[row1][col1]
+                mof[row1][col1] = '0'
+        elif len(neg_indices) == 2 and len(pos_indices) == 2:  # castles
+            negR1, negC1 = neg_indices[0]
+            negR2, negC2 = neg_indices[1]
+            posR1, posC1 = pos_indices[0]
+            posR2, posC2 = pos_indices[1]
+            if negR1 == 7 and negR2 == 7:  # white castle
+                if negC2 == 7:  # KINGSIDE
+                    mof[negR1][negC1] = '0'
+                    mof[negR2][negC2] = '0'
+                    mof[posR1][posC1] = 'R'
+                    mof[posR2][posC2] = 'K'
+                elif negC1 == 0:  # QUEENSIDE
+                    mof[negR1][negC1] = '0'
+                    mof[negR2][negC2] = '0'
+                    mof[posR1][posC1] = 'K'
+                    mof[posR2][posC2] = 'R'
+            elif negR1 == 0 and negR2 == 0:  # black castle
+                if negC2 == 7:  # KINGSIDE
+                    mof[negR1][negC1] = '0'
+                    mof[negR2][negC2] = '0'
+                    mof[posR1][posC1] = 'r'
+                    mof[posR2][posC2] = 'k'
+                elif negC1 == 0:  # QUEENSIDE
+                    mof[negR1][negC1] = '0'
+                    mof[negR2][negC2] = '0'
+                    mof[posR1][posC1] = 'r'
+                    mof[posR2][posC2] = 'k'
+            else:
+                mof = "Image Error"
+                pbs = np.loadtxt('Text Files/prevboardstate.txt', dtype=int)
+                np.savetxt('Text Files/boardstate.txt', pbs, fmt='%d')
 
-    #notes locations of the negative and positive values in differences
-
-    neg_indices = np.argwhere(diff < 0)
-    pos_indices = np.argwhere(diff > 0)
-
-    #saves row and column only for normal moves and white takes black moves
-    if(len(pos_indices)>0 and len(neg_indices)>0):
-        row1, col1 = neg_indices[0]
-        row2, col2 = pos_indices[0]
-
-    #update MOF file
-    #determines what kind of move is played and translates that into the mof.txt file
-    if (len(neg_indices) == 1 and len(pos_indices) == 1): # Standard movements (no takes) or white takes black
-        #for one negative value and one positive value
-        mof[row2][col2] = mof[row1][col1]
-        mof[row1][col1] = '0'
-    elif (len(neg_indices) > 1 and len(pos_indices) == 0): #black takes white
-        #for two negative values
-        row1, col1 = neg_indices[0]
-        row2, col2 = neg_indices[1]
-        if (abs(diff[row1][col1])>abs(diff[row2][col2])):
-            mof[row1][col1] = mof[row2][col2]
-            mof[row2][col2] = '0'
         else:
-            mof[row2][col2] = mof[row1][col1]
-            mof[row1][col1] = '0'
-    elif (len(neg_indices) == 2 and len(pos_indices) == 2): # castles
-        negR1, negC1 = neg_indices[0]
-        negR2, negC2 = neg_indices[1]
-        posR1, posC1 = pos_indices[0]
-        posR2, posC2 = pos_indices[1]
-        if(negR1 == 7 and negR2 == 7): #white castle
-            if(negC2 == 7): #KINGSIDE
-                mof[negR1][negC1] = '0'
-                mof[negR2][negC2] = '0'
-                mof[posR1][posC1] = 'R'
-                mof[posR2][posC2] = 'K'
-            elif(negC1 == 0): #QUEENSIDE
-                mof[negR1][negC1] = '0'
-                mof[negR2][negC2] = '0'
-                mof[posR1][posC1] = 'K'
-                mof[posR2][posC2] = 'R'
-        elif(negR1 == 0 and negR2 == 0): #black castle
-            if(negC2 == 7): #KINGSIDE
-                mof[negR1][negC1] = '0'
-                mof[negR2][negC2] = '0'
-                mof[posR1][posC1] = 'r'
-                mof[posR2][posC2] = 'k'
-            elif(negC1 == 0): #QUEENSIDE
-                mof[negR1][negC1] = '0'
-                mof[negR2][negC2] = '0'
-                mof[posR1][posC1] = 'r'
-                mof[posR2][posC2] = 'k'
-    arr_str = "\n".join([" ".join(row) for row in mof])
+            mof = "Image Error"
+            pbs = np.loadtxt('Text Files/prevboardstate.txt', dtype=int)
+            np.savetxt('Text Files/boardstate.txt', pbs, fmt='%d')
+    else:
+        mof = 'Image Error'
+        neg_indices = 0
+        pos_indices = 0
+        pbs = np.loadtxt('Text Files/prevboardstate.txt', dtype=int)
+        np.savetxt('Text Files/boardstate.txt', pbs, fmt='%d')
+    if mof == 'Image Error':
+        arr_str = "\n".join([" ".join(row) for row in oldMOF])
+        # save the string to a text file
+        with open('Text Files/mof.txt', "w") as f:
+            f.write(arr_str)
+    else:
+        arr_str = "\n".join([" ".join(row) for row in mof])
+        # save the string to a text file
+        with open('Text Files/mof.txt', "w") as f:
+            f.write(arr_str)
 
-    # save the string to a text file
-    with open('Text Files/mof.txt', "w") as f:
-        f.write(arr_str)
 
     return [mof, neg_indices, pos_indices, arr_str]
 
 #[newMOF, neg_indicies, pos_indicies, MOFtxt] = mofupdate(diff)
-#print(MOFtxt)
+#print(newMOF)
 #print(neg_indicies)
 #print(pos_indicies)
+#rint(MOFtxt)
 
 def FENupdate (newMOF): #Given Mock Fen gives peice information in FEN notatoin
     # Initialize an empty 2D array to store the characters
@@ -511,6 +527,25 @@ def fen2mof(FEN: str):
 #[newBoardState] = fen2mof(FEN)
 #print('Board state:', newBoardState)
 
+def iserror(impath):
+    [oldBoard, diff] = im2boardstate(impath)
+    if isinstance(diff, np.ndarray):
+        diff = diff
+    else:
+        print ("Too many Differences")
+        return ["IMAGE ERROR", 0, 0, 0]
+    
+    [mof, neg_indicies, pos_indicies, arr_str] = mofupdate(diff)
+    if  mof == 'Image Error':
+        print ("No Valid Move Detected")
+        return ["IMAGE ERROR", 0, 0, 0]
+    
+    return [oldBoard, diff, mof, arr_str]
+
+#[oldBoard, diff, mof, arr_str] = iserror("Images\Tester Images\move2Cropped.jpg")
+#print (oldBoard)
+#print (diff)
+#print (arr_str)
 
 def read_txt_file(file_path):
     # Open the file in read mode
@@ -609,10 +644,10 @@ def find_distances(move):
     print("New position after move:", new_position2)
     return
 
-def updateELO (diff):
-    elo = 3500 / (11 - diff)
+def updateELO(diff):
+    global stockfish
+    elo = 500 + 150 * diff
     stockfish.set_elo_rating(elo)
-
 
 def movementDirections(oldBoard, oldFEN, newBoard, newFEN):
     oldRow = 0
@@ -704,4 +739,3 @@ def get_chess_move(prev_fen, next_fen):
     
     return "~F"  # If no differences are found
 '''
-
