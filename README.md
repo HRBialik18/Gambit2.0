@@ -2,6 +2,8 @@
 
 This project is in correlation with a chess robot and aims to identify white (green) and black (purple) chess pieces in an image, continuously update a digital chess board, and output the next best move for the robot based on instructions.
 
+View the robot in action: https://drive.google.com/file/d/1Tai7A8m-olEU7LwCFi-Fn59TbuhEps7l/view?usp=sharing
+
 ## Image Assumptions
 
 The code starts with a pre-cropped and perspective-transformed image of a chessboard. The following assumptions are made about the image:
